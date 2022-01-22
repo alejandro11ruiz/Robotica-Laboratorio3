@@ -22,7 +22,7 @@ function varargout = GUI(varargin)
 
 % Edit the above text to modify the response to help GUI
 
-% Last Modified by GUIDE v2.5 20-Jan-2022 16:32:09
+% Last Modified by GUIDE v2.5 21-Jan-2022 18:32:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -91,7 +91,7 @@ Links(5) = Link('revolute','alpha',pi/2, 'a',0, 'd',0,  'offset',0,   'modified'
 Links(6) = Link('revolute','alpha',-pi/2,'a',0, 'd',0,  'offset',0,   'modified', 'qlim',[-2*pi 2*pi]);
 Epson_C4 = SerialLink(Links,'name','Epson C4','tool',T6b);
 
-Epson_C4.plot([0 0 0 0 0 0],'workspace',[-70 70 -70 70 0 90],'noa','jaxes','view',[-160 40]);
+Epson_C4.plot([pi/2 0 0 0 0 0],'workspace',[-30 30 -10 70 0 80],'noa','jaxes','view',[125 40]);
 assignin('base','Epson_C4',Epson_C4)
 
 % --- Executes on button press in pushbutton2.
@@ -100,5 +100,36 @@ function pushbutton2_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 Epson_C4 = evalin('base', 'Epson_C4');
-tqc = evalin('base', 'tqc');
-Epson_C4.plot(tqc,'workspace',[-70 70 -70 70 0 90],'noa','jaxes','view',[-160 40]);
+q = evalin('base', 'q2');
+viapoints = evalin('base', 'viapoints');
+for i=1:length(viapoints)
+    plot2(viapoints(i,:))
+end
+if handles.checkbox1.Value
+    delete 'Grabacion/Grabacion.avi'
+    Epson_C4.plot(q,'workspace',[-30 30 -10 70 0 80],'noa','jaxes','view',[125 40],'trail','r--','movie','Grabacion');
+    imageNames = dir(fullfile('Grabacion','','*.png'));
+    imageNames = {imageNames.name}';
+    outputVideo = VideoWriter(fullfile('Grabacion','Grabacion.avi'));
+    outputVideo.FrameRate = 130;
+    open(outputVideo)
+    for ii = 1:length(imageNames)
+       img = imread(fullfile('Grabacion',imageNames{ii}));
+       writeVideo(outputVideo,img)
+    end
+    close(outputVideo)
+    for ii = 1:length(imageNames)
+        delete(strcat('Grabacion/',imageNames{ii}))
+    end
+else
+    Epson_C4.plot(q,'workspace',[-30 30 -10 70 0 80],'noa','jaxes','view',[125 40],'trail','r--');
+end
+
+
+% --- Executes on button press in checkbox1.
+function checkbox1_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox1
